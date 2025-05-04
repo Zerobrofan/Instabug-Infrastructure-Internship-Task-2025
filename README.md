@@ -1,6 +1,7 @@
 # Automating SealedSecrets Re-encryption with kubeseal
 
-The solution plans to add an additional command to the **kubeseal CLI** for re-encrypting **SealedSecrets within** a **K8s** cluster with the new key pair. The process should proceed as follows: ***find all existing SealedSecrets, decrypt them using their corresponding keys, re-encrypt them with the new key pair, and finally update them within the cluster.***
+This solution plans to add an additional command to the **kubeseal CLI** for re-encrypting **SealedSecrets within** a **K8s** cluster with the new key pair. The process should proceed as follows: ***find all existing SealedSecrets, decrypt them using their corresponding keys, re-encrypt them with the new key pair, and finally update them within the cluster*** <br><br>
+**🛑 NOTE: Any code snippets written here are written in GO**
 
 ## Implementation Plan
 
@@ -11,11 +12,11 @@ kubeseal rotate-secrets [flags]
 ```
 
 #### Flags:
-- `--namespace`, `-n`: Name(s) of namespaces to be processed (default: all namespaces)
+- `--namespace`, `-n`: Name(s) of namespaces to be procesed (default: all namespaces)
 - `--selector`, `-l`: Label selector for filtering SealedSecrets
 - `--batch-size`: The number of secrets to be processed in parallel (default is 10)
-- `--output-format`, `-o`: File output format for generated logs (json, yaml, text)
-- `--backup`: Create backups before modifying SealedSecrets
+- `--output-format`, `-o`: File output format for generated log (json, yaml, text)
+- `--backup`: Create backups before modfying SealedSecrets
 
 ### 2. Key Components
 
@@ -24,23 +25,23 @@ kubeseal rotate-secrets [flags]
 The initial step is to find all the SealedSecrets within the cluster:
 ```go
 func discoverSealedSecrets(namespace string, labelSelector string) ([]SealedSecret, error) {
-    // Use the K8s API to list all the SealedSecrets in the given namespace(s)
-    // Filter results according to the given label selector if necessary
+    // use the K8s API to list all the SealedSecrets in the given namespace(s)
+    // filter results according to the given label selector if necessary
 }
 ```
 
-This will utilize the K8s API to list all of the SealedSecrets in the given namespace(s), with optional label filtering.
+This will utilise the K8s API to list all of the SealedSecrets in the given namespace(s), with optional label filtring
 
 #### B. Key Management
 
 The tool must communicate with the sealed-secrets controller in order to obtain the encryption keys:
 ```go
 func fetchPublicKeys() ([]PublicKey, error) {
-    // Fetch all active public keys from the sealed-secrets controller
+    // fetch the currently actve public keys from the sealed-secrets controller
 }
 
 func identifyLatestKey(keys []PublicKey) (PublicKey, error) {
-    // Identify the latest public key based on creation timestamp
+    // identify the latest public key based on creation timestamp
 }
 ```
 
@@ -49,11 +50,11 @@ func identifyLatestKey(keys []PublicKey) (PublicKey, error) {
 The core functionality involves decrypting and re-encrypting every SealedSecret:
 ```go
 func processSecret(sealedSecret SealedSecret, latestKey PublicKey) (SealedSecret, error) {
-    // Extract the encrypted data from the SealedSecret
-    // Decrypt the data with the controller's private key
-    // Re-encrypt the data using the latest public key
-    // Create a new SealedSecret with the re-encrypted data
-    // Return the updated SealedSecret
+    // extract the encrypted data from the SealedSecret
+    // decrypt the data with the controller's private key
+    // re-encrypt the data using the latst public key
+    // create a new SealedSecret with the re-encrypted data
+    // return the updated SealedSecret
 }
 ```
 
@@ -62,10 +63,10 @@ func processSecret(sealedSecret SealedSecret, latestKey PublicKey) (SealedSecret
 After being re-encrypted, the SealedSecrets are refreshed in the cluster to reflect the changes:
 ```go
 func updateSealedSecret(originalSecret SealedSecret, updatedSecret SealedSecret) error {
-    // Back up original SealedSecret when backup flag is turned on
-    // Update the cluster's SealedSecret with the newly re-encrypted version
-    // Ensure the update succeeded
-    // Return the errors that happened when the update took place
+    // back up original SealedSecret when backup flag is turned on
+    // update the cluster's SealedSecret with the newly re-encrypted version
+    // ensure the update succeeded
+    // return the errors that happened when the update took place
 }
 ```
 
@@ -74,23 +75,23 @@ func updateSealedSecret(originalSecret SealedSecret, updatedSecret SealedSecret)
 A simple logging system will track the re-encryption process:
 ```go
 func initializeLogger(outputFormat string) (Logger, error) {
-    // Set up logging based on the specified output format
+    // set up logging based on the specfied output format
 }
 
 func generateReport(results []ProcessingResult) (Report, error) {
-    // Compile the outcomes of the re-encryption process
-    // Generate a summary report
+    // compile the outcomes of the re-encryption process
+    // generate a summary report
 }
 ```
 
 ### 3. Workflow Sequence
 
-1. **Method Invocation**: The user invokes `kubeseal rotate-secrets` with desired parameters
-2. **Authentication and Permissions**: Ensure user is within their permission bounds to access the encryption keys.
+1. **Method Invocation**: The user invokes `kubeseal rotate-secrets` with desired parametrs
+2. **Authentication and Permissions**: Ensure user is within their permssion bounds to access the encryption keys.
 3. **Discovery**: Find all SealedSecrets within the given scope
 4. **Key Retrieval**: Retrieve all active public keys from the controller
 5. **Batch Processing**:
-   - Separate SealedSecrets in batches for processing efficiently
+   - Separate SealedSecrets in batches for processing effciently
    - For every batch:
      - Process secrets in parallel
      - Record results and errors
@@ -100,78 +101,78 @@ func generateReport(results []ProcessingResult) (Report, error) {
 
 ### Security Considerations
 
-1. **Private Key Security**: The implementation must ensure that private keys never leave the Kubernetes cluster. The decryption process should be performed by the controller within the cluster.
-2. **Access Control**: The tool should respect Kubernetes RBAC (Role-Based Access Control) and only allow authorized users to perform the re-encryption operation.
-3. **Backup and Recovery**: Before modifying any SealedSecret, the tool should create backups to allow recovery in case of failures.
-4. **Transactional Operations**: Changes should be atomic and reversible where possible to prevent partial updates that could lead to inconsistent states.
+1. **Private Key Security**: The solution should guarantee private keys are not exported out of the K8s cluster. The controller should decrypt in-cluster instead
+2. **Access Control**: The tool must respect K8s RBAC (Role-Based Access Control) and only permit users with permision to carry out the re-encryption action
+3. **Backup and Recovery**: The tool should make backups prior to changing any SealedSecret in order for recovery in the event of failure
+4. **Transactional Operations**: Transactions must be atomic and reversble where appropriate in order to avoid partial updates that will create inconistencies
 
 ### Performance Considerations
 
-1. **Batching**: Process SealedSecrets in batches to avoid overwhelming the Kubernetes API server and to improve performance.
-2. **Parallelism**: Use concurrent processing to speed up the re-encryption of multiple SealedSecrets.
-3. **Resource Constraints**: Consider cluster resource limitations and adjust batch sizes and parallelism accordingly.
-4. **Incremental Processing**: Support for resuming the process in case of interruptions.
+1. **Batching**: Process SealedSecrets in batches so that the K8s API server is not overwhelmed and performence is optimized
+2. **Parallelism**: Utilize concurrent processing in order to accelerate the re-encryption of several SealedSecrets
+3. **Resource Constraints**: Account for cluster resource constraints and scale batch sizes and paralelism accordingly
+4. **Incremental Processing**: Support resuming the process in the event of interuptions
 
 ### Compatibility Considerations
 
-1. **API Version Compatibility**: Ensure compatibility with different versions of the Kubernetes API and the sealed-secrets controller.
-2. **Custom Resource Definition Updates**: Handle potential changes in the SealedSecret CRD structure.
-3. **Backward Compatibility**: Maintain compatibility with existing SealedSecrets created with older versions of kubeseal.
+1. **API Version Compatibility**: Maintain compatiblity with various API versions of K8s as well as the sealed-secrets controller
+2. **Custom Resource Definition Updates**: Handle potential changes in the structure of the SealedSecret CRD
+3. **Backward Compatibility**: Preserve compatibilty with existing SealedSecrets generated with previous releases of kubeseal
 
 ## Error Handling
 
-The implementation should include robust error handling for scenarios such as:
-1. **Network Failures**: Handle temporary network issues with retries.
-2. **Permission Errors**: Provide clear feedback when permissions are insufficient.
-3. **Resource Not Found**: Handle cases where SealedSecrets may have been deleted during processing.
-4. **Controller Unavailability**: Gracefully handle situations where the sealed-secrets controller is unavailable.
-5. **Concurrency Issues**: Manage potential race conditions when multiple processes try to update the same SealedSecret.
+The implemntation must have error handling in place for situations like:
+1. **Network Failures**: Recover from temporory network failure with retries
+2. **Permission Errors**: Provide informative feedback when permssions are lacking
+3. **Resource Not Found**: Handle situtions in which SealedSecrets could have been deleted
+4. **Controller Unavailability**: Handle with cases when the sealed-secrets controller is not availabe
+5. **Concurrency Issues**: Adress potential race condtions when several proceses attempt to update the same SealedSecret
 
 ## Documentation
 
-### Basic Usage
+### Example Usage
 
-To re-encrypt all SealedSecrets in a cluster:
+#### Re-encrypting all SealedSecrets in a cluster
 ```bash
 kubeseal rotate-secrets
 ```
 
-### Limiting to Specific Namespaces
+#### Limiting to Specific Namespaces
 ```bash
 kubeseal rotate-secrets --namespace=my-namespace
 ```
 
-### Using Label Selectors
+#### Using Label Selectors
 ```bash
 kubeseal rotate-secrets --selector="app=myapp"
 ```
 
-### Adjusting Batch Size
+#### Adjusting Batch Size
 ```bash
 kubeseal rotate-secrets --batch-size=5
 ```
 
-### Disabling Backups
+#### Disabling Backups
 ```bash
 kubeseal rotate-secrets --backup=false
 ```
 
-### Changing Output Format
+#### Changing Output Format
 ```bash
 kubeseal rotate-secrets --output-format=json
 ```
 
 ### Example Use Cases
 
-1. **Regular Key Rotation**: Scheduled job to ensure all secrets use the latest key.
+1. **Regular Key Rotation**: Schduled job to ensure all secrets use the latest key.
 ```bash
-# Create a CronJob to run every month
+# create a cronjob to run every month
 kubectl create cronjob rotate-sealed-secrets --schedule="0 0 1 * *" --image=kubeseal -- rotate-secrets
 ```
 
 2. **Before/After Cluster Upgrades**: Ensure all secrets are using the latest key before upgrading the cluster.
 ```bash
-# Before upgrading
+# before upgrading
 kubeseal rotate-secrets --output-format=json > rotation-report.json
 ```
 
