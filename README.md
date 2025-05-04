@@ -1,42 +1,42 @@
 # Automating SealedSecrets Re-encryption with kubeseal
 
-This solution aims to extend the kubeseal CLI with a new command that automates the process of re-encrypting ***SealedSecrets*** in a **K8s** cluster with the latest key pair. The workflow should go as follows: ***identify all SealedSecrets, decrypt them using their respective keys, re-encrypt them with the latest key pair, and then update them in the cluster.***
+The solution plans to add an additional command to the **kubeseal CLI** for re-encrypting **SealedSecrets within** a **K8s** cluster with the new key pair. The process should proceed as follows: ***find all existing SealedSecrets, decrypt them using their corresponding keys, re-encrypt them with the new key pair, and finally update them within the cluster.***
 
 ## Implementation Plan
 
 ### 1. Command Structure
-We will add a new command to kubeseal CLI called `rotate-secrets`:
+We will introduce a new command for kubeseal CLI, named `rotate-secrets`:
 ```bash
 kubeseal rotate-secrets [flags]
 ```
 
 #### Flags:
-- `--namespace`, `-n`: Specify namespace(s) to process
-- `--selector`, `-l`: Label selector to filter SealedSecrets
-- `--batch-size`: Number of secrets to process in parallel
-- `--output-format`, `-o`: Output format for logs (json, yaml, text)
+- `--namespace`, `-n`: Name(s) of namespaces to be processed (default: all namespaces)
+- `--selector`, `-l`: Label selector for filtering SealedSecrets
+- `--batch-size`: The number of secrets to be processed in parallel (default is 10)
+- `--output-format`, `-o`: File output format for generated logs (json, yaml, text)
 - `--backup`: Create backups before modifying SealedSecrets
 
 ### 2. Key Components
 
 #### A. Secret Discovery
 
-The first step is to identify all SealedSecrets in the cluster:
+The initial step is to find all the SealedSecrets within the cluster:
 ```go
 func discoverSealedSecrets(namespace string, labelSelector string) ([]SealedSecret, error) {
-    // Use the Kubernetes API to list all SealedSecrets in the specified namespace(s)
-    // Filter results by the provided label selector if needed
+    // Use the K8s API to list all the SealedSecrets in the given namespace(s)
+    // Filter results according to the given label selector if necessary
 }
 ```
 
-This component will use the Kubernetes API to list all SealedSecrets in the specified namespace(s), with optional label filtering.
+This will utilize the K8s API to list all of the SealedSecrets in the given namespace(s), with optional label filtering.
 
 #### B. Key Management
 
-The tool needs to interact with the sealed-secrets controller to access encryption keys:
+The tool must communicate with the sealed-secrets controller in order to obtain the encryption keys:
 ```go
 func fetchPublicKeys() ([]PublicKey, error) {
-    // Retrieve all active public keys from the sealed-secrets controller
+    // Fetch all active public keys from the sealed-secrets controller
 }
 
 func identifyLatestKey(keys []PublicKey) (PublicKey, error) {
@@ -46,55 +46,55 @@ func identifyLatestKey(keys []PublicKey) (PublicKey, error) {
 
 #### C. Secret Processing
 
-The core functionality involves decrypting and re-encrypting each SealedSecret:
+The core functionality involves decrypting and re-encrypting every SealedSecret:
 ```go
 func processSecret(sealedSecret SealedSecret, latestKey PublicKey) (SealedSecret, error) {
     // Extract the encrypted data from the SealedSecret
-    // Decrypt the data using the controller's private key
+    // Decrypt the data with the controller's private key
     // Re-encrypt the data using the latest public key
-    // Create a new SealedSecret object with the re-encrypted data
+    // Create a new SealedSecret with the re-encrypted data
     // Return the updated SealedSecret
 }
 ```
 
 #### D. Secret Update
 
-Once re-encrypted, the SealedSecrets need to be updated in the cluster:
+After being re-encrypted, the SealedSecrets are refreshed in the cluster to reflect the changes:
 ```go
 func updateSealedSecret(originalSecret SealedSecret, updatedSecret SealedSecret) error {
-    // Back up the original SealedSecret if backup flag is enabled
-    // Update the SealedSecret in the cluster with the re-encrypted version
-    // Verify the update was successful
-    // Return any errors that occurred during the update
+    // Back up original SealedSecret when backup flag is turned on
+    // Update the cluster's SealedSecret with the newly re-encrypted version
+    // Ensure the update succeeded
+    // Return the errors that happened when the update took place
 }
 ```
 
 #### E. Logging and Reporting
 
-A comprehensive logging system will track the re-encryption process:
+A simple logging system will track the re-encryption process:
 ```go
 func initializeLogger(outputFormat string) (Logger, error) {
     // Set up logging based on the specified output format
 }
 
 func generateReport(results []ProcessingResult) (Report, error) {
-    // Compile the results of the re-encryption process
+    // Compile the outcomes of the re-encryption process
     // Generate a summary report
 }
 ```
 
 ### 3. Workflow Sequence
 
-1. **Command Invocation**: User runs `kubeseal rotate-secrets` with desired parameters
-2. **Authentication and Permission Check**: Verify user has sufficient permissions
-3. **Discovery**: Identify all SealedSecrets in the specified scope
-4. **Key Retrieval**: Fetch all active public keys from the controller
+1. **Method Invocation**: The user invokes `kubeseal rotate-secrets` with desired parameters
+2. **Authentication and Permissions**: Ensure user is within their permission bounds to access the encryption keys.
+3. **Discovery**: Find all SealedSecrets within the given scope
+4. **Key Retrieval**: Retrieve all active public keys from the controller
 5. **Batch Processing**:
-   - Divide SealedSecrets into batches for efficient processing
-   - For each batch:
+   - Separate SealedSecrets in batches for processing efficiently
+   - For every batch:
      - Process secrets in parallel
-     - Log results and errors
-6. **Reporting**: Generate and display a summary report
+     - Record results and errors
+6. **Reporting**: Create and show a summary report
 
 ## Implementation Considerations
 
