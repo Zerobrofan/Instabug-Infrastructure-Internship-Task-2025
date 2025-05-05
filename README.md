@@ -1,5 +1,20 @@
 # Automating SealedSecrets Re-encryption with `kubeseal`  
-**Infrastructure Internship Task 2025 – Solution Plan**  
+**Instabug Infrastructure Internship Task 2025 – Solution Plan** <br>
+**By: Abdallah Amir Monir**
+
+# Table of Contents
+
+1. [Objective](#objective)
+2. [Summary of Requirements](#summary-of-requirements)
+3. [Proposed CLI Command](#proposed-cli-command)
+4. [Directory Structure Example](#directory-structure-example)
+5. [Implementation Plan](#implementation-plan)  
+6. [Example Usage](#example-usage)
+7. [Building on Existing Code](#building-on-existing-code)
+8. [Testing Strategy](#testing-strategy)
+9. [Security Considerations](#security-considerations)
+10. [Notes](#notes)
+11. [Outcome](#outcome)
 
 ## Objective  
 
