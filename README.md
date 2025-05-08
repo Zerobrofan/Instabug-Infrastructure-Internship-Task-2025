@@ -170,4 +170,4 @@ This feature would primarily involve:
 
 ## Outcome  
 
-The `rotate-all` feature provides an **easy**, **secure**, and **scalable** way to re-encrypt SealedSecrets using the latest sealing key — maintaining key hygiene and reducing attack surface in environments using GitOps or public repositories.
+The `rotate-all` subcommand provides an automatic way to re-encrypt SealedSecrets using the latest key pair, which can be implemented as a cronjob to run on a scheduled basis, further strengthening the automation pipeline.
