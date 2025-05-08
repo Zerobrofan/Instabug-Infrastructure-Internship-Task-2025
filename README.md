@@ -55,7 +55,9 @@ report.json
 ## Implementation Plan  
 
 ### 1. **List All SealedSecrets**
-Use `kubectl` via Go client to list SealedSecrets:
+SealedSecrets are a Custom Resource Definition (CRD) provided by the SealedSecrets controller. <br>
+This CRD allows the Kubernetes API to handle encrypted secrets as native objects. <br>
+Thus, we can use `kubectl` via Go client to list SealedSecrets:
 
 ```bash
 kubectl get sealedsecrets -A -o json
