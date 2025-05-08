@@ -1,6 +1,6 @@
 # Automating SealedSecrets Re-encryption with `kubeseal`  
 **Instabug Infrastructure Internship Task 2025** <br>
-**By: Abdallah Amir Monir**
+**By: Abdallah Amir Monir - abdallahamirmonir@gmail.com**
 
 # Table of Contents
 
