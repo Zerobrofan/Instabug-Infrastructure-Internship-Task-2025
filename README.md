@@ -20,17 +20,6 @@
 
 Enhance the `kubeseal` CLI with an automated feature to re-encrypt all existing SealedSecrets in a Kubernetes cluster using the **latest active sealing key**, in order to support sealing key rotation and reduce long-term exposure to older keys.
 
-## Summary of Requirements  
-
-| Requirement | Notes |
-|------------|-------|
-| Identify all SealedSecrets in the cluster | Use `kubectl get sealedsecrets -A` |
-| Fetch all active public keys | Already supported via controller |
-| Decrypt using private key | Handled by controller, not exposed |
-| Re-encrypt using latest public key | `kubeseal --re-encrypt` |
-| Update SealedSecret objects | `kubectl apply -f` |
-| Bonus: Logging, batching, security | Included below |
-
 ## Proposed CLI Command  
 
 ```bash
